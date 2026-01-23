@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma'
 
+// Отключаем кэширование для получения актуальных данных из БД
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Home() {
   const notes = await prisma.note.findMany({
     orderBy: {
