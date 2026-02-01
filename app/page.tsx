@@ -6,6 +6,9 @@ export const revalidate = 0
 
 export default async function Home() {
   const notes = await prisma.note.findMany({
+    include: {
+      owner: true,
+    },
     orderBy: {
       createdAt: 'desc',
     },
@@ -46,7 +49,7 @@ export default async function Home() {
             >
               <h2 style={{ marginBottom: '0.5rem' }}>{note.title}</h2>
               <p style={{ fontSize: '0.875rem', color: '#666' }}>
-                Created: {new Date(note.createdAt).toLocaleString()}
+                Owner: {note.owner.name || note.owner.email} | Created: {new Date(note.createdAt).toLocaleString()}
               </p>
               <p style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.5rem' }}>
                 ID: {note.id}

@@ -5,18 +5,104 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Seed configuration
-// Run with: npm run db:seed
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  notes     Note[]
+  games     Game[]
+  votes     Vote[]
+
+  @@map("users")
+}
+
 model Note {
   id        String   @id @default(uuid())
+  ownerId   String
   title     String
   createdAt DateTime @default(now())
 
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
   @@map("notes")
+}
+
+model Category {
+  id       String @id @default(cuid())
+  category String @unique
+
+  games    Game[]
+
+  @@map("categories")
+}
+
+model Game {
+  id          String      @id @default(uuid())
+  ownerId     String
+  title       String
+  content     String
+  description String?
+  categoryId  String
+  visibility  GameVisibility @default(PRIVATE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  publishedAt DateTime?
+
+  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  votes       Vote[]
+  tags        GameTag[]
+
+  @@index([ownerId, updatedAt])
+  @@index([visibility, createdAt])
+  @@map("games")
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+
+  games GameTag[]
+
+  @@map("tags")
+}
+
+model GameTag {
+  id      String @id @default(uuid())
+  gameId  String
+  tagId   String
+
+  game    Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, tagId])
+  @@map("game_tags")
+}
+
+model Vote {
+  id      String   @id @default(uuid())
+  userId  String
+  gameId  String
+  value   Int      @default(1)
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game    Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+  @@index([gameId])
+  @@index([userId])
+  @@map("votes")
+}
+
+enum GameVisibility {
+  PRIVATE
+  PUBLIC
 }
