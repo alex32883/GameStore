@@ -5,6 +5,7 @@
 ## Структура проекта
 
 - **Next.js 14** с App Router и TypeScript
+- **Auth.js (NextAuth v5)** для аутентификации через Google OAuth
 - **Prisma** как ORM
 - **NeonDB** (PostgreSQL) как база данных
 - Готовность к деплою на Vercel
@@ -27,11 +28,16 @@ npm install
 cp .env.example .env
 ```
 
-4. Добавьте в `.env` ваш connection string:
+4. Добавьте в `.env` необходимые переменные (см. `.env.example`):
 
-```
+```env
 DATABASE_URL="postgresql://user:password@host:5432/database?sslmode=require"
+AUTH_SECRET="your-secret-key"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
 ```
+
+Подробная инструкция по настройке аутентификации: [AUTH_SETUP.md](./AUTH_SETUP.md)
 
 ### 3. Миграция базы данных
 
