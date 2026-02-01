@@ -127,21 +127,47 @@ DATABASE_URL="your-production-url" npm run db:seed
 ```
 .
 ├── app/
-│   ├── layout.tsx       # Root layout
-│   ├── page.tsx         # Главная страница с запросом к БД
-│   └── globals.css      # Глобальные стили
+│   ├── layout.tsx              # Root layout
+│   ├── page.tsx                # Главная страница с запросом к БД
+│   ├── globals.css             # Глобальные стили
+│   ├── view-db/                # Database Viewer приложение
+│   │   ├── page.tsx            # Выбор БД и список таблиц
+│   │   └── [table]/page.tsx    # Просмотр таблицы с CRUD
+│   └── api/
+│       └── view-db/            # API routes для Database Viewer
+│           ├── tables/route.ts
+│           ├── table/route.ts
+│           ├── create/route.ts
+│           ├── update/route.ts
+│           └── delete/route.ts
 ├── lib/
-│   └── prisma.ts        # Prisma Client instance
+│   ├── prisma.ts               # Prisma Client instance
+│   └── db-utils.ts             # Утилиты для работы с БД
 ├── prisma/
-│   ├── schema.prisma    # Prisma schema
-│   └── seed.ts          # Seed скрипт
-├── .env.example         # Пример переменных окружения
+│   ├── schema.prisma           # Prisma schema
+│   └── seed.ts                 # Seed скрипт
+├── .env.example                # Пример переменных окружения
 ├── .gitignore
 ├── next.config.js
 ├── package.json
 ├── tsconfig.json
-└── README.md
+├── README.md
+└── VIEW_DB_README.md           # Документация Database Viewer
 ```
+
+## Database Viewer
+
+Проект включает тестовую программу **view-db** для просмотра и управления данными в базе данных.
+
+**Доступ**: http://localhost:3000/view-db
+
+**Возможности**:
+- Выбор базы данных (локальная/рабочая)
+- Просмотр списка таблиц
+- Просмотр данных с пагинацией
+- CRUD операции (Create, Read, Update, Delete)
+
+Подробная документация: [VIEW_DB_README.md](./VIEW_DB_README.md)
 
 ## Важные замечания
 
@@ -149,6 +175,7 @@ DATABASE_URL="your-production-url" npm run db:seed
 2. **Prisma Client**: Генерируется автоматически при `npm run build` на Vercel
 3. **Миграции**: Выполняйте миграции перед деплоем или используйте `prisma migrate deploy` для production
 4. **Connection Pooling**: Neon автоматически предоставляет connection pooling через свой connection string
+5. **Database Viewer**: Для работы с рабочей БД добавьте `DATABASE_URL_PROD` в `.env` (опционально)
 
 ## Troubleshooting
 

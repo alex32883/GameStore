@@ -13,7 +13,22 @@ export default async function Home() {
 
   return (
     <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '2rem' }}>Notes from PostgreSQL (Neon)</h1>
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ margin: 0 }}>Notes from PostgreSQL (Neon)</h1>
+        <a
+          href="/view-db"
+          style={{
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#0070f3',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontWeight: '500',
+          }}
+        >
+          Database Viewer
+        </a>
+      </div>
       
       {notes.length === 0 ? (
         <p style={{ color: '#666' }}>No notes found. Run the seed script to add some data.</p>
