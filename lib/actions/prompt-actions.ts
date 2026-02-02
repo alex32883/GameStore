@@ -46,7 +46,7 @@ export async function createPrompt(data: {
     return { success: true, prompt }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message }
+      return { error: error.issues[0].message }
     }
     return { error: 'Failed to create prompt' }
   }
@@ -89,7 +89,7 @@ export async function updatePrompt(data: {
     return { success: true, prompt }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message }
+      return { error: error.issues[0].message }
     }
     return { error: 'Failed to update prompt' }
   }
