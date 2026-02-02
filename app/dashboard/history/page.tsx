@@ -1,17 +1,12 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { PromptCard } from '@/components/prompt-card'
-import { PromptDialog } from '@/components/prompt-dialog'
-import { Button } from '@/components/ui/button'
-import { Plus, Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { PromptsList } from '@/components/prompts-list'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function DashboardPage({
+export default async function HistoryPage({
   searchParams,
 }: {
   searchParams: { search?: string }
@@ -43,21 +38,21 @@ export default async function DashboardPage({
       }),
     },
     orderBy: { updatedAt: 'desc' },
-    take: 10,
+    take: 50,
   })
 
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Мои промпты</h1>
-        <p className="text-muted-foreground">Управляйте своими промптами</p>
+        <h1 className="text-3xl font-bold mb-2">История</h1>
+        <p className="text-muted-foreground">История ваших промптов</p>
       </div>
 
       <PromptsList 
         prompts={prompts} 
         userId={user.id}
         search={search}
-        emptyMessage="У вас пока нет промптов - создайте первый!"
+        emptyMessage="История пуста"
       />
     </div>
   )

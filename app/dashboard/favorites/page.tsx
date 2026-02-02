@@ -1,17 +1,12 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { PromptCard } from '@/components/prompt-card'
-import { PromptDialog } from '@/components/prompt-dialog'
-import { Button } from '@/components/ui/button'
-import { Plus, Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { PromptsList } from '@/components/prompts-list'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function DashboardPage({
+export default async function FavoritesPage({
   searchParams,
 }: {
   searchParams: { search?: string }
@@ -35,6 +30,7 @@ export default async function DashboardPage({
   const prompts = await prisma.prompt.findMany({
     where: {
       userId: user.id,
+      isFavorite: true,
       ...(search && {
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
@@ -49,15 +45,15 @@ export default async function DashboardPage({
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Мои промпты</h1>
-        <p className="text-muted-foreground">Управляйте своими промптами</p>
+        <h1 className="text-3xl font-bold mb-2">Избранное</h1>
+        <p className="text-muted-foreground">Ваши избранные промпты</p>
       </div>
 
       <PromptsList 
         prompts={prompts} 
         userId={user.id}
         search={search}
-        emptyMessage="У вас пока нет промптов - создайте первый!"
+        emptyMessage="У вас пока нет избранных промптов"
       />
     </div>
   )

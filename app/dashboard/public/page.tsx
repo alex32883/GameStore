@@ -1,17 +1,12 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { PromptCard } from '@/components/prompt-card'
-import { PromptDialog } from '@/components/prompt-dialog'
-import { Button } from '@/components/ui/button'
-import { Plus, Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { PromptsList } from '@/components/prompts-list'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function DashboardPage({
+export default async function PublicPromptsPage({
   searchParams,
 }: {
   searchParams: { search?: string }
@@ -22,19 +17,11 @@ export default async function DashboardPage({
     redirect('/login')
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email! },
-  })
-
-  if (!user) {
-    redirect('/login')
-  }
-
   const search = searchParams.search || ''
 
   const prompts = await prisma.prompt.findMany({
     where: {
-      userId: user.id,
+      isPublic: true,
       ...(search && {
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
@@ -42,22 +29,39 @@ export default async function DashboardPage({
         ],
       }),
     },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
     take: 10,
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
   })
 
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Мои промпты</h1>
-        <p className="text-muted-foreground">Управляйте своими промптами</p>
+        <h1 className="text-3xl font-bold mb-2">Публичные промпты</h1>
+        <p className="text-muted-foreground">Просматривайте промпты других пользователей</p>
       </div>
 
       <PromptsList 
-        prompts={prompts} 
-        userId={user.id}
+        prompts={prompts.map(p => ({
+          id: p.id,
+          title: p.title,
+          content: p.content,
+          isPublic: p.isPublic,
+          isFavorite: false,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+        }))}
+        userId={session.user.id!}
         search={search}
-        emptyMessage="У вас пока нет промптов - создайте первый!"
+        emptyMessage="Публичные промпты не найдены"
+        showActions={false}
       />
     </div>
   )
