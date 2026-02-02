@@ -30,6 +30,6 @@ export const authConfig = {
     },
   },
   session: {
-    strategy: 'database' as const, // Используем server-side сессии
+    strategy: 'jwt' as const, // Используем JWT для совместимости с Edge Runtime (middleware)
   },
 } satisfies NextAuthConfig
