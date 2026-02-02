@@ -9,17 +9,30 @@ import type { NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Пропускаем /login и /api/auth, чтобы избежать рекурсии
+  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) {
+    return NextResponse.next()
+  }
+
   // Защищенные страницы
   const protectedPaths = ['/dashboard', '/my-prompts']
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
 
   if (isProtectedPath) {
-    const session = await auth()
-    
-    if (!session) {
-      // Редирект на /login с сохранением URL для возврата
+    try {
+      const session = await auth()
+      
+      if (!session) {
+        // Редирект на /login с сохранением URL для возврата
+        const loginUrl = new URL('/login', request.url)
+        loginUrl.searchParams.set('callbackUrl', pathname)
+        return NextResponse.redirect(loginUrl)
+      }
+    } catch (error) {
+      // В случае ошибки (например, отсутствие переменных окружения) пропускаем
+      console.error('Auth error in middleware:', error)
+      // Редиректим на /login для безопасности
       const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
   }

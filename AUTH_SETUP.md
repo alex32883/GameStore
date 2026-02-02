@@ -32,13 +32,22 @@ openssl rand -base64 32
 
 1. Перейдите в [Google Cloud Console](https://console.cloud.google.com/)
 2. Создайте новый проект или выберите существующий
-3. Включите Google+ API
-4. Перейдите в "Credentials" → "Create Credentials" → "OAuth client ID"
-5. Выберите "Web application"
-6. Добавьте Authorized redirect URIs:
+3. Включите **Google Identity API** или **Google+ API**:
+   - APIs & Services → Library
+   - Найдите "Google Identity" или "Google+ API"
+   - Нажмите Enable
+4. Перейдите в **APIs & Services** → **Credentials**
+5. Нажмите **Create Credentials** → **OAuth client ID**
+6. Выберите **Web application**
+7. **ВАЖНО:** В разделе **Authorized redirect URIs** добавьте:
    - Для разработки: `http://localhost:3000/api/auth/callback/google`
    - Для production: `https://yourdomain.com/api/auth/callback/google`
-7. Скопируйте Client ID и Client Secret в `.env`
+   
+   ⚠️ **Обратите внимание:** URI должен быть точно `/api/auth/callback/google` (не `/auth/callback/google` или другой путь)
+8. Нажмите **Save**
+9. Скопируйте **Client ID** и **Client Secret** в `.env`
+
+**Если получаете ошибку `redirect_uri_mismatch`**, см. подробную инструкцию: [GOOGLE_OAUTH_FIX.md](./GOOGLE_OAUTH_FIX.md)
 
 ## Структура аутентификации
 

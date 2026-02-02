@@ -2,11 +2,10 @@
 
 import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
 
@@ -97,5 +96,23 @@ export default function LoginPage() {
         </button>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5',
+      }}>
+        <div>Загрузка...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
