@@ -24,6 +24,7 @@ model User {
   games         Game[]
   votes         Vote[]
   prompts       Prompt[]
+  promptLikes   PromptLike[]
 
   @@map("users")
 }
@@ -153,20 +154,35 @@ enum GameVisibility {
 }
 
 model Prompt {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   userId     String
   title      String
-  content    String   @db.Text
-  isPublic   Boolean  @default(false)
-  isFavorite Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  content    String       @db.Text
+  isPublic   Boolean      @default(false)
+  isFavorite Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes      PromptLike[]
 
   @@index([userId])
   @@index([isPublic])
   @@index([isFavorite])
   @@index([userId, isFavorite])
   @@map("prompts")
+}
+
+model PromptLike {
+  id        String   @id @default(cuid())
+  userId    String
+  promptId  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promptId])
+  @@index([promptId])
+  @@map("prompt_likes")
 }

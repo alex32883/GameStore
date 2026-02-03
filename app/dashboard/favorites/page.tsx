@@ -40,6 +40,21 @@ export default async function FavoritesPage({
     },
     orderBy: { updatedAt: 'desc' },
     take: 10,
+    include: {
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: user.id,
+        },
+        select: {
+          id: true,
+        },
+      },
+    },
   })
 
   return (
@@ -50,7 +65,17 @@ export default async function FavoritesPage({
       </div>
 
       <PromptsList 
-        prompts={prompts} 
+        prompts={prompts.map(p => ({
+          id: p.id,
+          title: p.title,
+          content: p.content,
+          isPublic: p.isPublic,
+          isFavorite: p.isFavorite,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+          likesCount: p._count.likes,
+          likedByMe: p.likes.length > 0,
+        }))} 
         userId={user.id}
         search={search}
         emptyMessage="У вас пока нет избранных промптов"

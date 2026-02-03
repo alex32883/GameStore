@@ -14,7 +14,7 @@ export const revalidate = 0
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { search?: string }
+  searchParams: { search?: string; sort?: string }
 }) {
   const session = await auth()
 
@@ -31,8 +31,9 @@ export default async function DashboardPage({
   }
 
   const search = searchParams.search || ''
+  const sort = searchParams.sort || 'recent'
 
-  const prompts = await prisma.prompt.findMany({
+  let prompts = await prisma.prompt.findMany({
     where: {
       userId: user.id,
       ...(search && {
@@ -43,8 +44,32 @@ export default async function DashboardPage({
       }),
     },
     orderBy: { updatedAt: 'desc' },
-    take: 10,
+    take: sort === 'popular' ? 50 : 10, // Берем больше для сортировки по популярности
+    include: {
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: user.id,
+        },
+        select: {
+          id: true,
+        },
+      },
+    },
   })
+
+  // Сортировка по популярности (количество лайков)
+  if (sort === 'popular') {
+    prompts = prompts.sort((a, b) => {
+      const likesDiff = b._count.likes - a._count.likes
+      if (likesDiff !== 0) return likesDiff
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    }).slice(0, 10) // Берем топ 10
+  }
 
   return (
     <div className="p-8">
@@ -54,9 +79,20 @@ export default async function DashboardPage({
       </div>
 
       <PromptsList 
-        prompts={prompts} 
+        prompts={prompts.map(p => ({
+          id: p.id,
+          title: p.title,
+          content: p.content,
+          isPublic: p.isPublic,
+          isFavorite: p.isFavorite,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+          likesCount: p._count.likes,
+          likedByMe: p.likes.length > 0,
+        }))} 
         userId={user.id}
         search={search}
+        sort={sort}
         emptyMessage="У вас пока нет промптов - создайте первый!"
       />
     </div>

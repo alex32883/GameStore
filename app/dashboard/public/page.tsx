@@ -9,7 +9,7 @@ export const revalidate = 0
 export default async function PublicPromptsPage({
   searchParams,
 }: {
-  searchParams: { search?: string }
+  searchParams: { search?: string; sort?: string }
 }) {
   const session = await auth()
 
@@ -17,9 +17,18 @@ export default async function PublicPromptsPage({
     redirect('/login')
   }
 
-  const search = searchParams.search || ''
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email! },
+  })
 
-  const prompts = await prisma.prompt.findMany({
+  if (!user) {
+    redirect('/login')
+  }
+
+  const search = searchParams.search || ''
+  const sort = searchParams.sort || 'recent'
+
+  let prompts = await prisma.prompt.findMany({
     where: {
       isPublic: true,
       ...(search && {
@@ -30,7 +39,7 @@ export default async function PublicPromptsPage({
       }),
     },
     orderBy: { createdAt: 'desc' },
-    take: 10,
+    take: sort === 'popular' ? 50 : 10, // Берем больше для сортировки по популярности
     include: {
       user: {
         select: {
@@ -38,8 +47,30 @@ export default async function PublicPromptsPage({
           email: true,
         },
       },
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: user.id,
+        },
+        select: {
+          id: true,
+        },
+      },
     },
   })
+
+  // Сортировка по популярности (количество лайков)
+  if (sort === 'popular') {
+    prompts = prompts.sort((a, b) => {
+      const likesDiff = b._count.likes - a._count.likes
+      if (likesDiff !== 0) return likesDiff
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    }).slice(0, 10) // Берем топ 10
+  }
 
   return (
     <div className="p-8">
@@ -57,9 +88,12 @@ export default async function PublicPromptsPage({
           isFavorite: false,
           createdAt: p.createdAt,
           updatedAt: p.updatedAt,
+          likesCount: p._count.likes,
+          likedByMe: p.likes.length > 0,
         }))}
-        userId={session.user.id!}
+        userId={user.id}
         search={search}
+        sort={sort}
         emptyMessage="Публичные промпты не найдены"
         showActions={false}
       />

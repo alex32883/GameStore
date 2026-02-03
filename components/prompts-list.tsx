@@ -17,12 +17,15 @@ interface Prompt {
   isFavorite: boolean
   createdAt: Date
   updatedAt: Date
+  likesCount?: number
+  likedByMe?: boolean
 }
 
 interface PromptsListProps {
   prompts: Prompt[]
   userId: string
   search?: string
+  sort?: string
   emptyMessage?: string
   showActions?: boolean
 }
@@ -30,7 +33,8 @@ interface PromptsListProps {
 export function PromptsList({ 
   prompts, 
   userId, 
-  search = '', 
+  search = '',
+  sort = 'recent',
   emptyMessage = 'Промпты не найдены',
   showActions = true 
 }: PromptsListProps) {
@@ -49,6 +53,12 @@ export function PromptsList({
     router.push(`?${params.toString()}`)
   }, 300)
 
+  const handleSortChange = (newSort: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('sort', newSort)
+    router.push(`?${params.toString()}`)
+  }
+
   const handleCreate = () => {
     setEditingPrompt(undefined)
     setDialogOpen(true)
@@ -61,8 +71,8 @@ export function PromptsList({
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-4">
-        <div className="flex-1 relative">
+      <div className="flex gap-4 flex-wrap">
+        <div className="flex-1 relative min-w-[200px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Поиск по заголовку или содержанию..."
@@ -70,6 +80,22 @@ export function PromptsList({
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10"
           />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={sort === 'popular' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleSortChange('popular')}
+          >
+            Популярные
+          </Button>
+          <Button
+            variant={sort === 'recent' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleSortChange('recent')}
+          >
+            Новые
+          </Button>
         </div>
         {showActions && (
           <Button onClick={handleCreate}>
@@ -97,6 +123,7 @@ export function PromptsList({
               prompt={prompt}
               onEdit={handleEdit}
               showActions={showActions}
+              currentUserId={userId}
             />
           ))}
         </div>

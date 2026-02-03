@@ -6,6 +6,7 @@ import { Pencil, Trash2, Globe, Lock, Star } from 'lucide-react'
 import { useState } from 'react'
 import { deletePrompt, togglePublic, toggleFavorite } from '@/lib/actions/prompt-actions'
 import { PromptDialog } from './prompt-dialog'
+import { LikeButton } from './like-button'
 
 interface PromptCardProps {
   prompt: {
@@ -16,12 +17,15 @@ interface PromptCardProps {
     isFavorite: boolean
     createdAt: Date
     updatedAt: Date
+    likesCount?: number
+    likedByMe?: boolean
   }
   onEdit?: (prompt: PromptCardProps['prompt']) => void
   showActions?: boolean
+  currentUserId?: string
 }
 
-export function PromptCard({ prompt, onEdit, showActions = true }: PromptCardProps) {
+export function PromptCard({ prompt, onEdit, showActions = true, currentUserId }: PromptCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
 
@@ -95,28 +99,40 @@ export function PromptCard({ prompt, onEdit, showActions = true }: PromptCardPro
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground mb-4">{preview}</p>
-        {showActions && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit?.(prompt)}
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              Редактировать
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Удаление...' : 'Удалить'}
-            </Button>
-          </div>
-        )}
-        <p className="text-xs text-muted-foreground mt-4">
+        
+        <div className="flex items-center justify-between mb-4">
+          {prompt.isPublic && (
+            <LikeButton
+              promptId={prompt.id}
+              initialLiked={prompt.likedByMe || false}
+              initialCount={prompt.likesCount || 0}
+              disabled={!currentUserId}
+            />
+          )}
+          {showActions && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit?.(prompt)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Редактировать
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isDeleting ? 'Удаление...' : 'Удалить'}
+              </Button>
+            </div>
+          )}
+        </div>
+        
+        <p className="text-xs text-muted-foreground">
           Обновлено: {new Date(prompt.updatedAt).toLocaleString()}
         </p>
       </CardContent>
